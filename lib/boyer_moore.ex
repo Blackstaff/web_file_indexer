@@ -51,7 +51,7 @@ defmodule BoyerMoore do
     cond do
       matching_chars + 1 == pattern_length -> 1
       HashDict.get(good_suffix, matching_chars + 1, 0) == 0 -> pattern_length - HashDict.get(full_shift, matching_chars + 1, 0)
-      true -> pattern_length - HashDict.get(good_suffix, matching_chars + 1)
+      true -> pattern_length - (HashDict.get(good_suffix, matching_chars + 1) - 1)
     end
   end
 
