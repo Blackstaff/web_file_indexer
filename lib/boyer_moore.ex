@@ -1,8 +1,40 @@
 defmodule BoyerMoore do
   def search(text, pattern) do
     r_pattern = Enum.reverse(pattern)
+
     bad_character_table = make_bad_character_table(r_pattern)
     good_suffix_tables = make_good_suffix_tables(r_pattern)
+    tables = Tuple.insert_at(good_suffix_tables, 0, bad_character_table)
+
+    text_prefixes = text_to_prefixes(text)
+
+    search(text_prefixes, r_pattern, Enum.count(pattern), tables, [])
+  end
+
+  defp search([], _, _, _, matches), do: Enum.reverse(matches)
+  defp search(text_prefixes, pattern, pattern_length, tables, matches) do
+    {bad_character_table, good_suffix_table, full_shift_table} = tables
+    [{number, prefix} | tail] = text_prefixes
+
+    matching_chars = llcp(pattern, prefix)
+    shift = 1
+    shifted_tail = Enum.drop(tail, shift - 1)
+    updated_matches = if matching_chars == pattern_length do
+      [number | matches]
+    else
+      matches
+    end
+
+    search(shifted_tail, pattern, pattern_length, tables, updated_matches)
+  end
+
+  defp calculate_shift(tables) do
+  end
+
+  def text_to_prefixes(text) do
+    step = fn(char, {number, prefix}) -> {number + 1, [char | prefix]} end
+    text_prefixes = List.foldl(text, [{0, []}], fn(char, acc) -> [step.(char, Kernel.hd(acc)) | acc] end)
+    Enum.reverse(text_prefixes)
   end
 
   #TODO implement
@@ -39,17 +71,14 @@ defmodule BoyerMoore do
 
   #TODO optimize
   def prefix_function(pattern) do
-    for tail <- tails(pattern), do: llcp(pattern, tail, 0)
-  end
-
-  defp prefix_function(pattern, count, prefix_table) do
-    tails = List.foldl(pattern, [], fn(value, acc) -> [h|_] = acc [[value | h] | acc] end)
     for tail <- tails(pattern), do: llcp(pattern, tail)
   end
 
   #TODO Przerobić na rekurencję ogonową
   defp tails([]), do: []
   defp tails(tail), do: [tail | tails(Kernel.tl(tail))]
+
+  defp llcp(list1, list2), do: llcp(list1, list2, 0)
 
   defp llcp([head | tail_x], [head | tail_y], matching_chars), do: llcp(tail_x, tail_y, matching_chars + 1)
   defp llcp(_,_, matching_chars), do: matching_chars
