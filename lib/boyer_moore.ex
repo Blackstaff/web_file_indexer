@@ -11,13 +11,14 @@ defmodule BoyerMoore do
     search(text_prefixes, r_pattern, Enum.count(pattern), tables, [])
   end
 
+  #TODO Add Galil's rule
   defp search([], _, _, _, matches), do: Enum.reverse(matches)
   defp search(text_prefixes, pattern, pattern_length, tables, matches) do
-    {bad_character_table, good_suffix_table, full_shift_table} = tables
     [{number, prefix} | tail] = text_prefixes
 
     matching_chars = llcp(pattern, prefix)
-    shift = 1
+    shift = calculate_shift(tables, {matching_chars, pattern_length})
+    IO.puts(shift)
     shifted_tail = Enum.drop(tail, shift - 1)
     updated_matches = if matching_chars == pattern_length do
       [number | matches]
@@ -28,13 +29,31 @@ defmodule BoyerMoore do
     search(shifted_tail, pattern, pattern_length, tables, updated_matches)
   end
 
-  defp calculate_shift(tables) do
-  end
 
   def text_to_prefixes(text) do
     step = fn(char, {number, prefix}) -> {number + 1, [char | prefix]} end
     text_prefixes = List.foldl(text, [{0, []}], fn(char, acc) -> [step.(char, Kernel.hd(acc)) | acc] end)
     Enum.reverse(text_prefixes)
+  end
+
+  defp calculate_shift(tables, pattern_data) do
+    {bad_character, good_suffix, full_shift} = tables
+    max(bad_character_shift(bad_character, pattern_data),
+      good_suffix_shift(good_suffix, full_shift, pattern_data))
+  end
+
+  defp bad_character_shift(table, matching_chars) do
+    1
+  end
+
+  defp good_suffix_shift(good_suffix, full_shift, pattern_data) do
+    {matching_chars, pattern_length} = pattern_data
+    #TODO split into 3 functions
+    cond do
+      matching_chars + 1 == pattern_length -> 1
+      HashDict.get(good_suffix, matching_chars + 1, 0) == 0 -> pattern_length - HashDict.get(full_shift, matching_chars + 1, 0)
+      true -> pattern_length - HashDict.get(good_suffix, matching_chars + 1)
+    end
   end
 
   #TODO implement
