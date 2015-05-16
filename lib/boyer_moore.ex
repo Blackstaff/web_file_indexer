@@ -18,7 +18,6 @@ defmodule BoyerMoore do
 
     matching_chars = llcp(pattern, prefix)
     shift = calculate_shift(tables, {matching_chars, pattern_length})
-    IO.puts(shift)
     shifted_tail = Enum.drop(tail, shift - 1)
     updated_matches = if matching_chars == pattern_length do
       [number | matches]
