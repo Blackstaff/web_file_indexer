@@ -6,9 +6,10 @@ defmodule BoyerMoore do
     good_suffix_tables = make_good_suffix_tables(r_pattern)
     tables = Tuple.insert_at(good_suffix_tables, 0, bad_character_table)
 
-    text_prefixes = text_to_prefixes(text)
+    pattern_length = Enum.count(pattern)
+    text_prefixes = Enum.drop(text_to_prefixes(text), pattern_length)
 
-    search(text_prefixes, r_pattern, Enum.count(pattern), tables, [])
+    search(text_prefixes, r_pattern, pattern_length, tables, [])
   end
 
   #TODO Add Galil's rule
@@ -18,6 +19,7 @@ defmodule BoyerMoore do
 
     matching_chars = llcp(pattern, prefix)
     shift = calculate_shift(tables, {matching_chars, pattern_length})
+    IO.puts(shift)
     shifted_tail = Enum.drop(tail, shift - 1)
     updated_matches = if matching_chars == pattern_length do
       [number | matches]
