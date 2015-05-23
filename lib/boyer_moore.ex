@@ -1,4 +1,19 @@
 defmodule BoyerMoore do
+  def search do
+    receive do
+      {from, tables, text, pattern, line_number} ->
+        pattern_length = Enum.count(pattern)
+        text_prefixes = Enum.drop(text_to_prefixes(text), pattern_length)
+        matches = search(text_prefixes, Enum.reverse(pattern), pattern_length, tables, [])
+        positions = format_response(matches, line_number)
+        send(from, positions)
+    end
+  end
+
+  defp format_response(matches, line_number) do
+    for match <- matches, do: %{line: line_number, pos: match}
+  end
+
   def search(text, pattern) do
     r_pattern = Enum.reverse(pattern)
 
@@ -19,7 +34,6 @@ defmodule BoyerMoore do
 
     matching_chars = llcp(pattern, prefix)
     shift = calculate_shift(tables, {matching_chars, pattern_length})
-    IO.puts(shift)
     shifted_tail = Enum.drop(tail, shift - 1)
     updated_matches = if matching_chars == pattern_length do
       [number | matches]
@@ -35,6 +49,14 @@ defmodule BoyerMoore do
     step = fn(char, {number, prefix}) -> {number + 1, [char | prefix]} end
     text_prefixes = List.foldl(text, [{0, []}], fn(char, acc) -> [step.(char, Kernel.hd(acc)) | acc] end)
     Enum.reverse(text_prefixes)
+  end
+
+  def preprocess(pattern) do
+    r_pattern = Enum.reverse(pattern)
+
+    bad_character_table = make_bad_character_table(r_pattern)
+    good_suffix_tables = make_good_suffix_tables(r_pattern)
+    tables = Tuple.insert_at(good_suffix_tables, 0, bad_character_table)
   end
 
   defp calculate_shift(tables, pattern_data) do
@@ -62,7 +84,7 @@ defmodule BoyerMoore do
     HashDict.new
   end
 
-  def make_good_suffix_tables(pattern) do
+  defp make_good_suffix_tables(pattern) do
     prefixes = Enum.reverse(prefix_function(pattern))
     pattern_length = Enum.count(pattern)
     {make_good_suffix_table(prefixes, pattern_length, 1, HashDict.new),
