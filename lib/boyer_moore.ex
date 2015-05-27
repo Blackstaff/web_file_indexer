@@ -1,4 +1,21 @@
 defmodule BoyerMoore do
+  @moduledoc """
+  Module that implements the Boyer-Moore string search algorithm.
+
+  The search/0 function can be used to parallelize the search
+    and should be spawned as a new process.
+
+  The search/2 function can be used in sequencial program.
+  """
+
+  @vsn 0.1
+
+  import BoyerMoore.Util
+
+  @doc """
+  Intented to be run as a process. Searches for pattern matches in text.
+  """
+
   def search do
     receive do
       {from, tables, text, pattern, line_number} ->
@@ -10,9 +27,15 @@ defmodule BoyerMoore do
     end
   end
 
+  @spec format_response([integer], integer) :: list({integer, integer})
+
   defp format_response(matches, line_number) do
     for match <- matches, do: %{line: line_number, pos: match}
   end
+
+  @doc """
+  Searches for pattern matches in text.
+  """
 
   def search(text, pattern) do
     r_pattern = Enum.reverse(pattern)
@@ -26,6 +49,8 @@ defmodule BoyerMoore do
 
     search(text_prefixes, r_pattern, pattern_length, tables, [])
   end
+
+  @spec search([char_list], char_list, integer, list, [integer]) :: [integer]
 
   #TODO Add Galil's rule
   defp search([], _, _, _, matches), do: Enum.reverse(matches)
@@ -44,12 +69,12 @@ defmodule BoyerMoore do
     search(shifted_tail, pattern, pattern_length, tables, updated_matches)
   end
 
+  @doc """
+  Preprocesses the pattern and returns a tuple containing the tables used
+  to calculate shift in Boyer-Moore algorithm.
+  """
 
-  def text_to_prefixes(text) do
-    step = fn(char, {number, prefix}) -> {number + 1, [char | prefix]} end
-    text_prefixes = List.foldl(text, [{0, []}], fn(char, acc) -> [step.(char, Kernel.hd(acc)) | acc] end)
-    Enum.reverse(text_prefixes)
-  end
+  @spec preprocess(char_list) :: {HashDict.t, HashDict.t, HashDict.t}
 
   def preprocess(pattern) do
     r_pattern = Enum.reverse(pattern)
@@ -59,15 +84,21 @@ defmodule BoyerMoore do
     tables = Tuple.insert_at(good_suffix_tables, 0, bad_character_table)
   end
 
+  @spec calculate_shift({any, HashDict.t, HashDict.t}, {integer, integer}) :: integer
+
   defp calculate_shift(tables, pattern_data) do
     {bad_character, good_suffix, full_shift} = tables
     max(bad_character_shift(bad_character, pattern_data),
       good_suffix_shift(good_suffix, full_shift, pattern_data))
   end
 
+  @spec
+
   defp bad_character_shift(table, matching_chars) do
     1
   end
+
+  @spec good_suffix_shift(HashDict.t, HashDict.t, {integer, integer}) :: integer
 
   defp good_suffix_shift(good_suffix, full_shift, pattern_data) do
     {matching_chars, pattern_length} = pattern_data
@@ -79,10 +110,14 @@ defmodule BoyerMoore do
     end
   end
 
+  @spec
+
   #TODO implement
   defp make_bad_character_table(pattern) do
     HashDict.new
   end
+
+  @spec make_good_suffix_tables(char_list) :: {HashDict.t, HashDict.t}
 
   defp make_good_suffix_tables(pattern) do
     prefixes = Enum.reverse(prefix_function(pattern))
@@ -90,6 +125,8 @@ defmodule BoyerMoore do
     {make_good_suffix_table(prefixes, pattern_length, 1, HashDict.new),
       make_full_shift_table(prefixes, 0, pattern_length, 0, HashDict.new)}
   end
+
+  @spec
 
   defp make_good_suffix_table(_, pattern_length, pattern_length, table), do: table
   defp make_good_suffix_table([head | tail], pattern_length, count, table) do
@@ -101,6 +138,8 @@ defmodule BoyerMoore do
     make_good_suffix_table(tail, pattern_length, count + 1, updated_table)
   end
 
+  @spec
+
   defp make_full_shift_table(_, _, pattern_length, pattern_length, table), do: table
   defp make_full_shift_table([head | tail], longest_suffix, pattern_length, count, table) do
     new_longest_suffix = cond do
@@ -110,18 +149,4 @@ defmodule BoyerMoore do
     updated_table = HashDict.put(table, pattern_length - count, new_longest_suffix)
     make_full_shift_table(tail, new_longest_suffix, pattern_length, count + 1, updated_table)
   end
-
-  #TODO optimize
-  def prefix_function(pattern) do
-    for tail <- tails(pattern), do: llcp(pattern, tail)
-  end
-
-  #TODO Przerobić na rekurencję ogonową
-  defp tails([]), do: []
-  defp tails(tail), do: [tail | tails(Kernel.tl(tail))]
-
-  defp llcp(list1, list2), do: llcp(list1, list2, 0)
-
-  defp llcp([head | tail_x], [head | tail_y], matching_chars), do: llcp(tail_x, tail_y, matching_chars + 1)
-  defp llcp(_,_, matching_chars), do: matching_chars
 end
