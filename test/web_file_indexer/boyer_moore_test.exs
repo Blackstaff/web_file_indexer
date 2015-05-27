@@ -1,5 +1,7 @@
-defmodule BoyerMooreTest do
+defmodule WebFileIndexer.BoyerMooreTest do
   use ExUnit.Case, async: true
+
+  alias WebFileIndexer.BoyerMoore
 
   test "Search for a pattern that exists in the text" do
     text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'

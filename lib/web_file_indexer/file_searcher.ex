@@ -1,8 +1,10 @@
-defmodule FileSearcher do
+defmodule WebFileIndexer.FileSearcher do
   @moduledoc """
   """
 
   @vsn 0.1
+
+  alias WebFileIndexer.BoyerMoore
 
   def search(files, pattern) do
     tables = BoyerMoore.preprocess(pattern)

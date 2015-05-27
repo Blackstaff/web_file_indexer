@@ -1,4 +1,4 @@
-defmodule BoyerMoore do
+defmodule WebFileIndexer.BoyerMoore do
   @moduledoc """
   Module that implements the Boyer-Moore string search algorithm.
 
@@ -10,7 +10,7 @@ defmodule BoyerMoore do
 
   @vsn 0.1
 
-  import BoyerMoore.Util
+  import WebFileIndexer.BoyerMoore.Util
 
   @doc """
   Searches for pattern matches in the text.

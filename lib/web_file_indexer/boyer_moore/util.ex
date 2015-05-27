@@ -1,4 +1,4 @@
-defmodule BoyerMoore.Util do
+defmodule WebFileIndexer.BoyerMoore.Util do
   @moduledoc """
   Utility functions for Boyer-Moore algorithm.
   """
