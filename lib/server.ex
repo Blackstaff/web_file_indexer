@@ -1,5 +1,6 @@
 defmodule IndexedFile do
-  defstruct id: 0, filename: "", folder: "", data: ''
+  defstruct id: 0, filename: "", folder: "", data: ""
+  @type t :: %IndexedFile{id: integer, filename: String.t, folder: String.t, data: String.t}
 end
 
 defmodule WebFileIndexer.Server do
