@@ -13,41 +13,14 @@ defmodule BoyerMoore do
   import BoyerMoore.Util
 
   @doc """
-  Intented to be run as a process. Searches for pattern matches in text.
+  Searches for pattern matches in the text.
   """
 
-  def search do
-    receive do
-      {from, tables, text, pattern, line_number} ->
-        pattern_length = Enum.count(pattern)
-        text_prefixes = Enum.drop(text_to_prefixes(text), pattern_length)
-        matches = search(text_prefixes, Enum.reverse(pattern), pattern_length, tables, [])
-        positions = format_response(matches, line_number)
-        send(from, positions)
-    end
-  end
-
-  @spec format_response([integer], integer) :: list({integer, integer})
-
-  defp format_response(matches, line_number) do
-    for match <- matches, do: %{line: line_number, pos: match}
-  end
-
-  @doc """
-  Searches for pattern matches in text.
-  """
-
-  def search(text, pattern) do
-    r_pattern = Enum.reverse(pattern)
-
-    bad_character_table = make_bad_character_table(r_pattern)
-    good_suffix_tables = make_good_suffix_tables(r_pattern)
-    tables = Tuple.insert_at(good_suffix_tables, 0, bad_character_table)
-
+  def search(text, pattern, tables) do
     pattern_length = Enum.count(pattern)
     text_prefixes = Enum.drop(text_to_prefixes(text), pattern_length)
-
-    search(text_prefixes, r_pattern, pattern_length, tables, [])
+    matches = search(text_prefixes, Enum.reverse(pattern), pattern_length, tables, [])
+    for match <- matches, do: match - (pattern_length - 1)
   end
 
   @spec search([char_list], char_list, integer, list, [integer]) :: [integer]
