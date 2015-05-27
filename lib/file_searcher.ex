@@ -1,5 +1,20 @@
 defmodule FileSearcher do
-  def search_file(data, pattern, tables) do
+  @moduledoc """
+  """
+
+  @vsn 0.1
+
+  def search(files, pattern) do
+    tables = BoyerMoore.preprocess(pattern)
+    search_fun = fn(file) ->
+      positions = search_file(file.data, pattern, tables)
+      %{id: file.id, filename: file.filename, folder: file.folder,
+        positions: positions}
+    end
+    pmap(files, search_fun)
+  end
+
+  defp search_file(data, pattern, tables) do
     text_lines = data |> String.split("\n") |> Enum.map(&(String.to_char_list(&1)))
     search_fun = fn(text_line) ->
       BoyerMoore.search(text_line, pattern, tables) end
