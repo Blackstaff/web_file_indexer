@@ -14,7 +14,22 @@ end
 defmodule WebFileIndexer.API do
   use Maru.Router
 
+  alias WebFileIndexer.Server
+
   get do
     %{hello: :world} |> json
+  end
+
+  resource :push do
+    desc "Upload file"
+    params do
+      requires :filename, type: String
+      requires :folder, type: String
+      requires :data, type: String
+    end
+    post do
+      {:ok, reply} = GenServer.call(Server, params)
+      reply |> json
+    end
   end
 end

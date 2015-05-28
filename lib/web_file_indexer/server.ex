@@ -6,12 +6,17 @@ defmodule WebFileIndexer.IndexedFile do
 end
 
 defmodule WebFileIndexer.Server do
+  @moduledoc """
+  """
+
+  @vsn 0.1
+
   use GenServer
 
   alias WebFileIndexer.IndexedFile
 
   defmodule State do
-    defstruct files: []
+    defstruct count: 0, files: []
   end
 
   def start_link do
@@ -23,7 +28,14 @@ defmodule WebFileIndexer.Server do
   end
 
   def handle_call(request, _from, state) do
+    file = %IndexedFile{id: state.count + 1,
+      filename: request[:filename],
+      folder: request[:folder],
+      data: request[:data]}
 
+    new_state = %State{count: state.count + 1, files: [file | state.files]}
+    reply = {:ok, file}
+    {:reply, reply, new_state}
   end
 
   def handle_cast(_msg, state) do
