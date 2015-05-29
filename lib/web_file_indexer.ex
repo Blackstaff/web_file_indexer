@@ -28,7 +28,7 @@ defmodule WebFileIndexer.API do
       requires :data, type: String
     end
     post do
-      GenServer.cast(Server, params)
+      GenServer.cast(Server, {:push, params})
       %{response: :ok} |> json
     end
   end

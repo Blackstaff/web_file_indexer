@@ -27,10 +27,16 @@ defmodule WebFileIndexer.Server do
     {:ok, %State{}}
   end
 
-  def handle_call(request, _from, state) do
+  def handle_call({:search, request}, _from, state) do
+  end
+  def handle_call({:get_files, request}, _from, state) do
   end
 
-  def handle_cast(request, state) do
+  def handle_call(request, from, state) do
+    super(request, from, state)
+  end
+
+  def handle_cast({:push, request}, state) do
     file = %IndexedFile{id: state.count + 1,
       filename: request[:filename],
       folder: request[:folder],
@@ -38,5 +44,9 @@ defmodule WebFileIndexer.Server do
 
     new_state = %State{count: state.count + 1, files: [file | state.files]}
     {:noreply, new_state}
+  end
+
+  def handle_cast(request, state) do
+    super(request, state)
   end
 end
