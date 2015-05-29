@@ -28,17 +28,15 @@ defmodule WebFileIndexer.Server do
   end
 
   def handle_call(request, _from, state) do
+  end
+
+  def handle_cast(request, state) do
     file = %IndexedFile{id: state.count + 1,
       filename: request[:filename],
       folder: request[:folder],
       data: request[:data]}
 
     new_state = %State{count: state.count + 1, files: [file | state.files]}
-    reply = {:ok, file}
-    {:reply, reply, new_state}
-  end
-
-  def handle_cast(_msg, state) do
-
+    {:noreply, new_state}
   end
 end
