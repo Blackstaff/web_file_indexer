@@ -29,7 +29,12 @@ defmodule WebFileIndexer.Server do
 
   def handle_call({:search, request}, _from, state) do
   end
-  def handle_call({:get_files, request}, _from, state) do
+
+  def handle_call({:get_files}, _from, state) do
+    files = Enum.reverse(state.files)
+    reply = for file <- files, do: %{id: file.id, filename: file.filename,
+      folder: file.folder} #|> Enum.reverse
+    {:reply, reply, state}
   end
 
   def handle_call(request, from, state) do

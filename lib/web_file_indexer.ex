@@ -32,4 +32,11 @@ defmodule WebFileIndexer.API do
       %{response: :ok} |> json
     end
   end
+
+  resource :file do
+    desc "Get file list"
+    get do
+      GenServer.call(Server, {:get_files}) |> json
+    end
+  end
 end
