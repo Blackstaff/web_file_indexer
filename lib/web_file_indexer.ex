@@ -37,7 +37,7 @@ defmodule WebFileIndexer.API do
     end
   end
 
-  resource :file do
+  resource :files do
     desc "Get file list"
     get do
       GenServer.call(Server, {:get_files}) |> json
