@@ -16,8 +16,12 @@ defmodule WebFileIndexer.API do
 
   alias WebFileIndexer.Server
 
-  get do
-    %{hello: :world} |> json
+  namespace :search do
+    route_param :word do
+      get do
+        GenServer.call(Server, {:search, params[:word]}) |> json
+      end
+    end
   end
 
   resource :push do

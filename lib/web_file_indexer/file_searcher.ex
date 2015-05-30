@@ -13,7 +13,8 @@ defmodule WebFileIndexer.FileSearcher do
       %{id: file.id, filename: file.filename, folder: file.folder,
         positions: positions}
     end
-    pmap(files, search_fun)
+    result = pmap(files, search_fun)
+    for elem <- result, Enum.count(elem.positions) > 0, do: elem
   end
 
   defp search_file(data, pattern, tables) do

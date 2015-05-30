@@ -14,6 +14,7 @@ defmodule WebFileIndexer.Server do
   use GenServer
 
   alias WebFileIndexer.IndexedFile
+  alias WebFileIndexer.FileSearcher
 
   defmodule State do
     defstruct count: 0, files: []
@@ -28,6 +29,9 @@ defmodule WebFileIndexer.Server do
   end
 
   def handle_call({:search, request}, _from, state) do
+    pattern = String.to_char_list(request)
+    reply = FileSearcher.search(state.files, pattern) |> Enum.reverse
+    {:reply, reply, state}
   end
 
   def handle_call({:get_files}, _from, state) do
