@@ -2,7 +2,7 @@ defmodule WebFileIndexer.FileSearcher do
   @moduledoc """
   """
 
-  @vsn 0.1
+  @vsn 0.2
 
   alias WebFileIndexer.BoyerMoore
 
@@ -22,7 +22,7 @@ defmodule WebFileIndexer.FileSearcher do
     search_fun = fn(text_line) ->
       BoyerMoore.search(text_line, pattern, tables) end
     matches = pmap(text_lines, search_fun)
-    format_matches(matches)
+    matches |> format_matches |> apply_offset(text_lines)
   end
 
   defp format_matches(matches) do
@@ -33,6 +33,28 @@ defmodule WebFileIndexer.FileSearcher do
     end
     {_, positions} = List.foldl(matches, {0, []}, fold_fun)
     Enum.reverse(positions)
+  end
+
+  defp apply_offset(matches, text_lines) do
+    offset_table = make_offset_table(text_lines)
+    for match <- matches, do: %{line: match.line,
+      pos: match.pos + HashDict.get(offset_table, match.line)}
+  end
+
+  defp make_offset_table(text_lines) do
+    offset_fun = fn(line, acc) ->
+      {line_number, offset_table} = acc
+
+      next_line_number = line_number + 1
+      prev_offset = HashDict.get(offset_table, line_number, 0)
+      offset = Enum.count(line) + prev_offset
+
+      {next_line_number, HashDict.put(offset_table, next_line_number, offset)}
+    end
+
+    initial_acc = {1, HashDict.new |> HashDict.put(1, 0)}
+    {_, offset_table} = List.foldl(text_lines, initial_acc, offset_fun)
+    offset_table
   end
 
   defp concat([], acc), do: acc
