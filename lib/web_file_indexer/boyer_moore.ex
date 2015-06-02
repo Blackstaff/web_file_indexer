@@ -19,18 +19,24 @@ defmodule WebFileIndexer.BoyerMoore do
   def search(text, pattern, tables) do
     pattern_length = Enum.count(pattern)
     text_prefixes = Enum.drop(text_to_prefixes(text), pattern_length)
-    matches = search(text_prefixes, Enum.reverse(pattern), pattern_length, tables, [])
+    matches = search(pattern_length, text_prefixes, Enum.reverse(pattern),
+      pattern_length, tables, [])
     for match <- matches, do: match - (pattern_length - 1)
   end
 
-  @spec search([char_list], char_list, integer, list, [integer]) :: [integer]
+  @spec search(integer, [char_list], char_list, integer, list, [integer]) :: [integer]
 
   #TODO Add Galil's rule
-  defp search([], _, _, _, matches), do: Enum.reverse(matches)
-  defp search(text_prefixes, pattern, pattern_length, tables, matches) do
+  defp search(_, [], _, _, _, matches), do: Enum.reverse(matches)
+  defp search(galil, text_prefixes, pattern, pattern_length, tables, matches) do
     [{number, prefix} | tail] = text_prefixes
 
-    matching_chars = llcp(pattern, prefix)
+    length = llcp(pattern, Enum.take(prefix, galil))
+    matching_chars = if length == galil do
+      pattern_length
+    else
+      length
+    end
     shift = calculate_shift(tables, {matching_chars, pattern_length})
     shifted_tail = Enum.drop(tail, shift - 1)
     updated_matches = if matching_chars == pattern_length do
@@ -39,7 +45,13 @@ defmodule WebFileIndexer.BoyerMoore do
       matches
     end
 
-    search(shifted_tail, pattern, pattern_length, tables, updated_matches)
+    new_galil = if (pattern_length - shift) <= matching_chars do
+      shift
+    else
+      pattern_length
+    end
+
+    search(new_galil, shifted_tail, pattern, pattern_length, tables, updated_matches)
   end
 
   @doc """
