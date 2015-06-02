@@ -58,7 +58,7 @@ defmodule WebFileIndexer.FileSearcher do
   end
 
   defp concat([], acc), do: acc
-  defp concat(list, []), do: list
+  #defp concat(list, []), do: list
   defp concat(list, acc) do
     [head | tail] = list
     concat(tail, [head | acc])
