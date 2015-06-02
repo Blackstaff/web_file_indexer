@@ -26,7 +26,6 @@ defmodule WebFileIndexer.BoyerMoore do
 
   @spec search(integer, [char_list], char_list, integer, list, [integer]) :: [integer]
 
-  #TODO Add Galil's rule
   defp search(_, [], _, _, _, matches), do: Enum.reverse(matches)
   defp search(galil, text_prefixes, pattern, pattern_length, tables, matches) do
     [{number, prefix} | tail] = text_prefixes
