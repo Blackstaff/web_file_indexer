@@ -8,7 +8,7 @@ defmodule WebFileIndexer.BoyerMoore do
   The search/2 function can be used in sequencial program.
   """
 
-  @vsn 0.1
+  @vsn 0.5
 
   import WebFileIndexer.BoyerMoore.Util
 
