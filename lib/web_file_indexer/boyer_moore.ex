@@ -87,7 +87,6 @@ defmodule WebFileIndexer.BoyerMoore do
 
   defp good_suffix_shift(good_suffix, full_shift, pattern_data) do
     {matching_chars, pattern_length} = pattern_data
-    #TODO split into 3 functions
     cond do
       matching_chars + 1 == pattern_length -> 1
       HashDict.get(good_suffix, matching_chars + 1, 0) == 0 -> pattern_length - HashDict.get(full_shift, matching_chars + 1, 0)
