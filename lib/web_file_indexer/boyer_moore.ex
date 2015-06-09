@@ -21,7 +21,7 @@ defmodule WebFileIndexer.BoyerMoore do
     text_prefixes = Enum.drop(text_to_prefixes(text), pattern_length)
     matches = search(pattern_length, text_prefixes, Enum.reverse(pattern),
       pattern_length, tables, [])
-    for match <- matches, do: match - (pattern_length - 1)
+    #for match <- matches, do: match - (pattern_length - 1)
   end
 
   @spec search(integer, [char_list], char_list, integer, list, [integer]) :: [integer]
@@ -39,7 +39,7 @@ defmodule WebFileIndexer.BoyerMoore do
     shift = calculate_shift(tables, {matching_chars, pattern_length})
     shifted_tail = Enum.drop(tail, shift - 1)
     updated_matches = if matching_chars == pattern_length do
-      [number | matches]
+      [number - (pattern_length - 1) | matches]
     else
       matches
     end
