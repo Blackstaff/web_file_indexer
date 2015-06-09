@@ -22,7 +22,6 @@ defmodule WebFileIndexer.BoyerMoore.Util do
 
   @spec
 
-  #TODO optimize
   def prefix_function(pattern) do
     for tail <- tails(pattern), do: llcp(pattern, tail)
   end
@@ -33,7 +32,6 @@ defmodule WebFileIndexer.BoyerMoore.Util do
 
   @spec tails(list) :: list(list)
 
-  #TODO Przerobić na rekurencję ogonową
   def tails([]), do: []
   def tails(tail), do: [tail | tails(Kernel.tl(tail))]
 
