@@ -47,7 +47,7 @@ defmodule WebFileIndexer.FileSearcher do
 
       next_line_number = line_number + 1
       prev_offset = HashDict.get(offset_table, line_number, 0)
-      offset = Enum.count(line) + prev_offset
+      offset = Enum.count(line) + prev_offset + 1
 
       {next_line_number, HashDict.put(offset_table, next_line_number, offset)}
     end
