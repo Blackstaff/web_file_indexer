@@ -33,6 +33,8 @@ defmodule WebFileIndexer.Server do
       reply = []
     else
       pattern = String.to_char_list(request)
+      file_set = HashDict.get(state.words, request)
+      files = for file <- state.files, HashSet.member?(file_set, file.id), do: file
       reply = FileSearcher.search(state.files, pattern) |> Enum.reverse
     end
     {:reply, reply, state}
