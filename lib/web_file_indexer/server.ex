@@ -17,7 +17,7 @@ defmodule WebFileIndexer.Server do
   alias WebFileIndexer.FileSearcher
 
   defmodule State do
-    defstruct count: 0, files: []
+    defstruct count: 0, files: [], words: HashDict.new
   end
 
   def start_link do
@@ -29,8 +29,12 @@ defmodule WebFileIndexer.Server do
   end
 
   def handle_call({:search, request}, _from, state) do
-    pattern = String.to_char_list(request)
-    reply = FileSearcher.search(state.files, pattern) |> Enum.reverse
+    if HashDict.get(state.words, request, []) == [] do
+      reply = []
+    else
+      pattern = String.to_char_list(request)
+      reply = FileSearcher.search(state.files, pattern) |> Enum.reverse
+    end
     {:reply, reply, state}
   end
 
@@ -51,7 +55,13 @@ defmodule WebFileIndexer.Server do
       folder: request[:folder],
       data: request[:data]}
 
-    new_state = %State{count: state.count + 1, files: [file | state.files]}
+    words_reduce = fn (elem, acc) ->
+      acc |> HashDict.put(elem, HashSet.put(HashDict.get(acc, elem, HashSet.new), file.id))
+    end
+    words = file.data |> String.split(~r{[^A-Za-z0-9ĄąĆćĘęŁłŃńÓóŚśŹźŻż\-]})
+            |> Enum.reduce(state.words, words_reduce)
+
+    new_state = %State{count: state.count + 1, files: [file | state.files], words: words}
     {:noreply, new_state}
   end
 
