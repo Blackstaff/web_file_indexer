@@ -36,7 +36,7 @@ defmodule WebFileIndexer.BoyerMoore do
     else
       length
     end
-    shift = calculate_shift(tables, {matching_chars, pattern_length})
+    shift = calculate_shift(tables, {matching_chars, pattern_length}, pattern)
     shifted_tail = Enum.drop(tail, shift - 1)
     updated_matches = if matching_chars == pattern_length do
       [number - (pattern_length - 1) | matches]
@@ -68,18 +68,20 @@ defmodule WebFileIndexer.BoyerMoore do
     tables = Tuple.insert_at(good_suffix_tables, 0, bad_character_table)
   end
 
-  @spec calculate_shift({any, HashDict.t, HashDict.t}, {integer, integer}) :: integer
+  @spec calculate_shift({any, HashDict.t, HashDict.t}, {integer, integer}, list) :: integer
 
-  defp calculate_shift(tables, pattern_data) do
+  defp calculate_shift(tables, pattern_data, pattern) do
     {bad_character, good_suffix, full_shift} = tables
-    max(bad_character_shift(bad_character, pattern_data),
+    max(bad_character_shift(bad_character, pattern_data, pattern),
       good_suffix_shift(good_suffix, full_shift, pattern_data))
   end
 
   @spec
 
-  defp bad_character_shift(table, matching_chars) do
-    1
+  defp bad_character_shift(table, {matching_chars, _}, pattern) do
+    r_pattern = Enum.reverse(pattern)
+    char = Enum.at(r_pattern, matching_chars + 1)
+    HashDict.get(table, char, 1)
   end
 
   @spec good_suffix_shift(HashDict.t, HashDict.t, {integer, integer}) :: integer
@@ -95,9 +97,17 @@ defmodule WebFileIndexer.BoyerMoore do
 
   @spec
 
-  #TODO implement
   defp make_bad_character_table(pattern) do
-    HashDict.new
+    pattern_length = Enum.count(pattern)
+    default_table = (for char <- [1..255], do: {char, pattern_length})
+      |> Enum.into(HashDict.new)
+    set_shifts(pattern, pattern_length, 1, default_table)
+  end
+
+  defp set_shifts([], _, _, dict), do: dict
+  defp set_shifts([h|t], pattern_length, position, dict) do
+    set_shifts(t, pattern_length, position + 1,
+      HashDict.put(dict, h, pattern_length - position))
   end
 
   @spec make_good_suffix_tables(char_list) :: {HashDict.t, HashDict.t}
