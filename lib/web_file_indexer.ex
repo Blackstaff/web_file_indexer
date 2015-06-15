@@ -33,7 +33,7 @@ defmodule WebFileIndexer.API do
     end
     post do
       GenServer.cast(Server, {:push, params})
-      %{response: :ok} |> json
+      "<p>OK</p>" |> text
     end
   end
 
