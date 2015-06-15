@@ -19,7 +19,7 @@ defmodule WebFileIndexer.API do
   namespace :search do
     route_param :word do
       get do
-        GenServer.call(Server, {:search, params[:word]}) |> json
+        GenServer.call(Server, {:search, params[:word]}, :infinity) |> json
       end
     end
   end
@@ -33,7 +33,7 @@ defmodule WebFileIndexer.API do
     end
     post do
       GenServer.cast(Server, {:push, params})
-      %{response: :ok} |> json
+      "<p>OK</p>" |> text
     end
   end
 
