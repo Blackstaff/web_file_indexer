@@ -43,4 +43,8 @@ defmodule WebFileIndexer.API do
       GenServer.call(Server, {:get_files}) |> json
     end
   end
+
+  def error(conn, e) do
+    %{error: e} |> json
+  end
 end
