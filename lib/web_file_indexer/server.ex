@@ -56,7 +56,7 @@ defmodule WebFileIndexer.Server do
 
   # There is a cached result for the pattern (file count has changed)
   defp search(request, state, file_set, {_count, cache}) do
-    cashe_set = for %{id: id} <- cache, do: id |> Enum.into(HashSet.new)
+    cashe_set = (for %{id: id} <- cache, do: id) |> Enum.into(HashSet.new)
     {_, reply, _} = search(request, state, HashSet.difference(file_set, cashe_set), [])
 
     combined_reply = reply ++ cache
